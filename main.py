@@ -42,6 +42,10 @@ it needs a sentence"), names the plain mechanism (describe it in
 plain words on make.fun), and closes on low risk ("no code, nothing
 to lose") -- persuasion, clarity, truth and warmth in one read,
 with nothing overpromised.
+
+Revision: main() now also validates the one-sentence rule itself
+(exactly one sentence, on a single line), not just the length gate,
+so a two-sentence or multi-line line can no longer pass silently.
 """
 
 import os
@@ -58,6 +62,13 @@ def main() -> None:
     text = LINE.strip()
     if not 1 <= len(text) <= 240:
         raise SystemExit(f"entry is {len(text)} characters, must be 1-240")
+    # The period inside "make.fun" is not a sentence break, so set it
+    # aside before counting sentence-ending periods.
+    body = text.replace("make.fun", "makefun")
+    if body.count(".") != 1 or not text.endswith("."):
+        raise SystemExit("entry must be exactly one sentence")
+    if "\n" in text or "\r" in text:
+        raise SystemExit("entry must be a single line")
     os.makedirs("/output", exist_ok=True)
     with open("/output/entry.txt", "w", encoding="utf-8") as handle:
         handle.write(text)
